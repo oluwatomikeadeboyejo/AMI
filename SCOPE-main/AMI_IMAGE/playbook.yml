@@ -1,0 +1,12 @@
+---
+- name: Install a Basic Package Without Gathering Facts
+  hosts: all
+  become: yes
+  gather_facts: no  # Disables fact gathering
+
+  tasks:
+    - name: Install 'tree' (a lightweight package)
+      yum:
+        name: tree
+        state: present
+

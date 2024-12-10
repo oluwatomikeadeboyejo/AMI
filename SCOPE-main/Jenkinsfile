@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout your code from your GitHub repository
+                git 'https://github.com/oluwatomikeadeboyejo/SCOPE.git'
+            }
+        }
+
+        stage('Validate Packer Template') {
+            steps {
+             
+                dir('AMI_IMAGE') {
+                    sh 'packer validate scope_image.pkr.hcl'
+                }
+            }
+        }
+
+        stage('Build AMI with Packer') {
+            steps {
+             
+                dir('AMI_IMAGE') {
+                    sh 'packer build scope_image.pkr.hcl'
+                }
+            }
+        }
+
+        stage('Initialize Terraform') {
+            steps {
+          
+                dir('instances') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Build Instance and Vulnerability Scan') {
+            steps {
+             
+                dir('instances') {
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+    post {
+        always {
+      
+            echo 'Pipeline execution complete.'
+        }
+        failure {
+           
+            echo 'Pipeline failed!'
+        }
+    }
+}
